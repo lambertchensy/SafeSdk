@@ -16,7 +16,7 @@ project("ollvmmodule")
 # cppFlags '-mllvm -sub -mllvm -sub_loop=3'
 # cppFlags '-mllvm -fla -mllvm -split -mllvm -split_num=2' // 只有-split_num=3会奔溃  （混淆）TODO ZTG  配置 3、4运行会不会崩溃
 # cppFlags "-fvisibility=hidden -Wl,--exclude-libs,ALL"
-set(OLLVM "-mllvm -sub -mllvm -fla -mllvm -sobf -mllvm -split")
+set(OLLVM "-mllvm -sub -mllvm -fla -mllvm -sobf -mllvm -split -mllvm -bcf")
 add_definitions(${OLLVM})
 
 # Creates and names a library, sets it as either STATIC
