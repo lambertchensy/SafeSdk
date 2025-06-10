@@ -52,6 +52,7 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         # List C/C++ source files with relative paths to this CMakeLists.txt.
         native-lib.cpp
         ${SYSCALL_FILE_NAME}   #添加 ARM 32(ARM64) 位汇编源文件
+        raw_syscall.cpp
         sign/CheckSign.cpp
 )
 
