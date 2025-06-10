@@ -44,9 +44,10 @@ android {
             version = "3.22.1"
         }
     }
-    ndkVersion = "24.0.8215888"  //指定ndk版本，配合OLLVM-14.0.0(自带的clang版本14.0.1,替换后具有ollvm混淆的clang版本是14.0.0)
-    //ndkVersion = "27.2.12479018"  //指定ndk版本，配合OLLVM-18.0.3
-    //ndkVersion = "28.0.13004108"  //指定ndk版本，配合OLLVM-19.0.0
+    //ndkVersion = "24.0.8215888"  //指定ndk版本，配合OLLVM-14.0.0(自带的clang版本14.0.1,替换后具有ollvm混淆的clang版本是14.0.0)
+    ndkVersion = "26.0.10792818"   // 指定ndk版本，配合DreamSoule的OLLVM-17.0.2 (自带的 clang version 17.0.2)
+    //ndkVersion = "27.2.12479018"  //指定ndk版本，配合buffcow的OLLVM-18.0.3
+    //ndkVersion = "28.0.13004108"  //指定ndk版本，配合buffcow的OLLVM-19.0.0
 
     buildFeatures {
         viewBinding = true
