@@ -13,10 +13,13 @@ int my_openat(int fd, const char *path, int oflag, mode_t mode) {
     return raw_syscall(__NR_openat, fd, path, oflag, mode);
 }
 
-int my_strcmp(const char *s1, const char *s2) {
-    while (*s1 && (*s1 == *s2)) {
-        s1++;
-        s2++;
-    }
-    return *(const unsigned char *)s1 - *(const unsigned char *)s2;
+int my_strcmp(const char *src, const char *dst) {
+    int ret = 0 ;
+    while( ! (ret = *(unsigned char *)src - *(unsigned char *)dst) && *dst)
+        ++src, ++dst;
+    if ( ret < 0 )
+        ret = -1 ;
+    else if ( ret > 0 )
+        ret = 1 ;
+    return( ret );
 }
