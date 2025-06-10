@@ -23,6 +23,9 @@ project("ollvmmodule")
 # cppFlags '-mllvm -sub -mllvm -sub_loop=3'
 # cppFlags '-mllvm -fla -mllvm -split -mllvm -split_num=2' // 只有-split_num=3会奔溃  （混淆）TODO ZTG  配置 3、4运行会不会崩溃
 # cppFlags "-fvisibility=hidden -Wl,--exclude-libs,ALL"
+# -------------------------------------------------------------------------------------------
+# annotate使用说明: 可传入上面的混淆开关名使此函数强制开启对应混淆功能,参考: https://github.com/DreamSoule/ollvm17?tab=readme-ov-file
+
 set(OLLVM "-mllvm -fla -mllvm -bcf -mllvm -bcf_prob=80 -mllvm -bcf_loop=3 -mllvm -sobf -mllvm -icall -mllvm -ibr -mllvm -igv -mllvm -sub -mllvm -sub_loop=3 -mllvm -split -mllvm -split_num=5")
 add_definitions(${OLLVM})
 
