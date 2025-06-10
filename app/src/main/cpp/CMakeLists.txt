@@ -14,8 +14,9 @@ project("ollvmmodule")
 #  1. 注意: 将 ollvm 的参数添加到构建命令中。(经测试，fla 与 bcf 同时启用会闪退，原因未知?)
 #     -mllvm -fla -mllvm -bcf: fla和bcf同时启用会导致编译速度很慢且部分函数无法使用(OLLVM-14.0.0上已复现，编译速度很慢，基本卡死)
 #  2. 配置2： DreamSoule在git上写的功能全开的配置，DreamSoule OLLVM-17.0.2，同样在bcf不开的情况下效果要比下面的配置3效果更好。而如果全开的话，效果可以达到最好，且编译出的so库最大(编译速度会稍微慢一点)
+#            配置2包含配置3的所有选项，且选项中的参数设置比默认值更高，而且增加了额外选项(1.间接调用 (call 寄存器) icall  2. 间接分支 ibr  3. 间接全局变量 igv)
 #     -mllvm -fla -mllvm -bcf -mllvm -bcf_prob=80 -mllvm -bcf_loop=3 -mllvm -sobf -mllvm -icall -mllvm -ibr -mllvm -igv -mllvm -sub -mllvm -sub_loop=3 -mllvm -split -mllvm -split_num=5
-#  3. 配置3: 另一个的全开配置。(DreamSoule OLLVM-17.0.2效果要比OLLVM-14.0.0的效果好很多 )
+#  3. 配置3: buffcow的另一个的全开配置。(DreamSoule OLLVM-17.0.2效果要比OLLVM-14.0.0的效果好很多 )
 #    -mllvm -sub -mllvm -sobf -mllvm -split -mllvm -fla -mllvm -bcf
 # ----------------------------------------------------------------------------------------------------------------------
 # cppFlags '-mllvm -sobf'
