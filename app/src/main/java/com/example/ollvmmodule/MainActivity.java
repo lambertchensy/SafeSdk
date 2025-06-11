@@ -3,9 +3,12 @@ package com.example.ollvmmodule;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
 
 import com.example.ollvmmodule.databinding.ActivityMainBinding;
+import com.example.ollvmmodule.util.SignUtils;
+import com.example.ollvmmodule.util.SignatureUtil;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -27,6 +30,9 @@ public class MainActivity extends AppCompatActivity {
         TextView tv = binding.sampleText;
         tv.setText(stringFromJNI());
         checkApkSign();
+        String signMd5Base64 = SignUtils.getSignMd5Base64(this);
+        Log.d("SignUtils", "MD5 (Base64): " + signMd5Base64);
+        Log.d("SignUtils", "getSignatureStr: " + SignatureUtil.getSignatureStr(this));
     }
 
     /**

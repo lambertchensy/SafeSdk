@@ -10,7 +10,12 @@
 #include "Log.h"
 #include "raw_syscall.h"
 #include "sign/CheckSign.h"
+#include "utils/Base64Utils.h"
 using namespace std;
+
+//取apk签名的base64的md5的前10字符，然后再base64编码
+#define TEMP_APK_SIGN_STR "MGY4YmI4YWIwMQ=="
+
 
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_example_ollvmmodule_MainActivity_stringFromJNI(
@@ -80,10 +85,14 @@ Java_com_example_ollvmmodule_MainActivity_checkApkSign(JNIEnv* env,jobject conte
     }
 
     //check svc apk sign
-    const string &svcSign = checkSign(env, path).substr(0, 10);
-    LOGD("svc get apk sign=%s" ,svcSign.c_str());
+    //测试签名的md5返回的正确结果: fb4276cf05221ac060b5e0c8772431d7
+    // 测试签名的base64的md5返回的正确结果:0f8bb8ab0188d116444b2dee0aafdb97 (0f8bb8ab01)
+    const string &svc_apk_sign_md5 = checkSign(env, path).substr(0, 10);
+    LOGD("svc get apk sign=%s" ,svc_apk_sign_md5.c_str());
     //1、check svc get sign match
-
+    if (svc_apk_sign_md5 == Base64Utils::VTDecode(TEMP_APK_SIGN_STR)) {
+        LOGD("check svc get sign match");
+    }
     //3、check apk path(Readlinkat反查apkPath)
     char buff[PATH_MAX] = {0};
     std::string fdPath("/proc/");

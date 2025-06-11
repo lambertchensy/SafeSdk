@@ -65,6 +65,7 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         raw_syscall.cpp
         sign/CheckSign.cpp
         utils/Base64Utils.cpp
+        utils/MD5Utils.cpp
 )
 
 # Specifies libraries CMake should link to your target library. You

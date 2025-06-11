@@ -14,6 +14,7 @@
 #include <jni.h>
 #include "../raw_syscall.h"
 #include "../utils/Base64Utils.h"
+#include "../utils/MD5Utils.h"
 using namespace std;
 
 
@@ -211,7 +212,9 @@ string checkSign(JNIEnv * env,const char* apkPath){
         return {};
     }
 
-    std::string md5Result = Base64Utils::VTEncode(read_certificate(fd1));
+    std::string signEncodeResult = Base64Utils::VTEncode(read_certificate(fd1));
+    std::string md5Result = MD5Utils::md5(signEncodeResult); //先进行Base64编码然后再MD5运算
+
     close(fd1);
     return md5Result;
 }
@@ -220,6 +223,7 @@ string checkSign(JNIEnv * env,int fd1){
     if(fd1 == -1){
         return {};
     }
-    std::string md5Result = Base64Utils::VTEncode(read_certificate(fd1));
+    std::string signEncodeResult = Base64Utils::VTEncode(read_certificate(fd1));
+    std::string md5Result = MD5Utils::md5(signEncodeResult); //先进行Base64编码然后再MD5运算
     return md5Result;
 }
