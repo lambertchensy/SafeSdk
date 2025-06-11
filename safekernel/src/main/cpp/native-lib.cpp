@@ -18,9 +18,7 @@ using namespace std;
 
 
 extern "C" JNIEXPORT jstring JNICALL
-Java_com_example_ollvmmodule_MainActivity_stringFromJNI(
-        JNIEnv* env,
-        jobject /* this */) {
+Java_com_example_safekernel_SafeHelper_stringFromJNI(JNIEnv *env, jclass clz, jobject appContext) {
     std::string hello = "Hello from C++";
     int a = atoi("sfvweg");
     if(a == 0)
@@ -69,8 +67,8 @@ const char* getApkPath(JNIEnv* env, jobject context) {
 }
 
 extern "C" JNIEXPORT jstring JNICALL
-Java_com_example_ollvmmodule_MainActivity_checkApkSign(JNIEnv* env,jobject context) {
-    const char *path = getApkPath(env,context);
+Java_com_example_safekernel_SafeHelper_checkApkSign(JNIEnv *env, jclass clz, jobject appContext) {
+    const char *path = getApkPath(env,appContext);
     LOGD("apkPath=%s",path);
     if(path == nullptr){
         LOGE("getApkPath == null");
