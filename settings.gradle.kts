@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "OllvmModule"
 include(":app")
+include(":safekernel")
