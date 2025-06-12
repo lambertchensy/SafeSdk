@@ -68,10 +68,17 @@ const char* getApkPath(JNIEnv* env, jobject context) {
 
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_example_safekernel_SafeHelper_checkApkSign(JNIEnv *env, jclass clz, jobject appContext) {
+    // 初始化标志位(最后处于1到9之间的检测结果的都算是正确)
+    int sign_match_flag = 0;
+    int permission_flag = 0;
+    int path_match_flag = 0;
+
+
     const char *path = getApkPath(env,appContext);
     LOGD("apkPath=%s",path);
     if(path == nullptr){
         LOGE("getApkPath == null");
+        return env->NewStringUTF("000"); // 所有标志位都为 0
     }
 
     //打开base.apk文件，获得fd
@@ -80,6 +87,7 @@ Java_com_example_safekernel_SafeHelper_checkApkSign(JNIEnv *env, jclass clz, job
                        0640);
     if(fd < 0){
         LOGE("openat error => %s",path);
+        return env->NewStringUTF("000"); // 所有标志位都为 0
     }
 
     //check svc apk sign
@@ -90,8 +98,25 @@ Java_com_example_safekernel_SafeHelper_checkApkSign(JNIEnv *env, jclass clz, job
     //1、check svc get sign match
     if (svc_apk_sign_md5 == Base64Utils::VTDecode(TEMP_APK_SIGN_STR)) {
         LOGD("check svc get sign match");
+        sign_match_flag = 1;
     }
+
+    //2.文件权限检测(确认我们打开的fd是系统文件 。因为/data/app/包名/base.apk是一个系统文件，系统文件的gid和uid都是1000)
+    struct stat statBuff = {0};
+    long stat = raw_syscall(__NR_fstat, fd, &statBuff);
+    if (stat < 0) {
+        LOGE("check apk sign path fail __NR_fstat<0");
+    }else {
+        if (statBuff.st_uid == 1000 && statBuff.st_gid == 1000) {  // check uid&gid (1000 = system group)
+            LOGD("check apk sign gid&uid success ");
+            permission_flag = 1;
+        } else {
+            LOGE("check apk sign gid&uid fail ");
+        }
+    }
+
     //3、check apk path(Readlinkat反查apkPath)
+    //4、Readlinkat返回值截断(如果攻击者只改了Readlinkat的参数，改了路径，但是返回值忘记修改，这样他的返回值就会被阶段，也就是大小不匹配，也可以检测出来 路径和传入的原始路径是否相等)
     char buff[PATH_MAX] = {0};
     std::string fdPath("/proc/");
     fdPath.append(to_string(getpid())).append("/fd/").append(to_string(fd));
@@ -101,28 +126,24 @@ Java_com_example_safekernel_SafeHelper_checkApkSign(JNIEnv *env, jclass clz, job
             close(fd);
         }
         LOGE("readlinkat error");
-    }
-
-    //4、Readlinkat返回值截断
-    buff[len] = '\0'; //加这个，如果攻击者没修改readlinkat的返回值，就可以检测出来
-    LOGD("check apk sign path =%s",buff);
-    if (my_strcmp(path, buff) == 0) {
-        LOGD("check apk  path success ");
-        //2.文件权限检测(确认我们打开的fd是系统文件 。因为/data/app/包名/base.apk是一个系统文件，系统文件的gid和uid都是1000)
-        struct stat statBuff = {0};
-        long stat = raw_syscall(__NR_fstat, fd, &statBuff);
-        if (stat < 0) {
-            LOGE("check apk sign path fail __NR_fstat<0");
+    }else{
+        buff[len] = '\0'; //加这个，如果攻击者没修改readlinkat的返回值，就可以检测出来
+        LOGD("check apk sign path =%s",buff);
+        if (my_strcmp(path, buff) == 0) {
+            LOGD("check apk  path success ");
+            path_match_flag = 1;
+        }else {
+            LOGE("check apk sign path fail ");
         }
-        if (statBuff.st_uid != 1000 && statBuff.st_gid != 1000) {  //check uid&gid (1000 = system group)
-            LOGE("check apk sign gid&uid fail ");
-        }
-        //5、check Inode
-
-    }else {
-        LOGE("check apk sign path fail ");
     }
+    //5、check Inode
+    //6、对已经打开的fd进行签名获取:
 
-    return env->NewStringUTF(path);   // 真实签名和签名检测结果同步上传
+    // 将标志位组合成字符串
+    std::string result = std::to_string(sign_match_flag) +
+                         std::to_string(permission_flag) +
+                         std::to_string(path_match_flag);
+    LOGD("checkApkSign result:%s",result.c_str());
+    return env->NewStringUTF(result.c_str());   // 将检测结果返回
 }
 
