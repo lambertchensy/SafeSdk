@@ -11,6 +11,7 @@
 #include "raw_syscall.h"
 #include "sign/CheckSign.h"
 #include "utils/Base64Utils.h"
+#include "json/json.h"
 using namespace std;
 
 //取apk签名的base64的md5的前10字符，然后再base64编码
@@ -25,7 +26,13 @@ Java_com_example_safekernel_SafeHelper_stringFromJNI(JNIEnv *env, jclass clz, jo
         printf("%d",1);
     else
         printf("%d--f", 10);
-    return env->NewStringUTF(hello.c_str());
+
+    Json::Value json;
+    json["test"]= "hello";json["value"]="word";
+    json["ret"]= 10;
+    Json::StreamWriterBuilder fastWriter;
+    string strSendJson = Json::writeString(fastWriter, json);
+    return env->NewStringUTF(strSendJson.c_str());
 }
 
 

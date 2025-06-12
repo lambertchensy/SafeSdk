@@ -27,7 +27,7 @@ project("safekernel")
 # annotate使用说明: 可传入上面的混淆开关名使此函数强制开启对应混淆功能,参考: https://github.com/DreamSoule/ollvm17?tab=readme-ov-file
 
 set(OLLVM "-mllvm -fla -mllvm -bcf -mllvm -bcf_prob=80 -mllvm -bcf_loop=3 -mllvm -sobf -mllvm -icall -mllvm -ibr -mllvm -igv -mllvm -sub -mllvm -sub_loop=3 -mllvm -split -mllvm -split_num=5")
-#add_definitions(${OLLVM})
+add_definitions(${OLLVM})
 
 # 启用 C 和汇编语言的支持
 enable_language(C ASM)
@@ -60,12 +60,23 @@ message("-- SYSCALL_FILE_NAME=${SYSCALL_FILE_NAME}")
 # System.loadLibrary() and pass the name of the library defined here;
 # for GameActivity/NativeActivity derived applications, the same library name must be
 # used in the AndroidManifest.xml file.
-add_library(
-        #################### TODO ZTG 定义项目的名字####################
-        ${CMAKE_PROJECT_NAME}
-        # Sets the library as a shared library.
-        SHARED
 
+# 设置 jsoncpp 源码目录
+set(JSONCPP_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp)
+# 包含头文件目录
+include_directories(${JSONCPP_SOURCE_DIR}/include)
+# 添加 jsoncpp 库
+add_library( jsoncpp SHARED
+        # List C/C++ source files with relative paths to this CMakeLists.txt.
+        ${JSONCPP_SOURCE_DIR}/src/lib_json/json_reader.cpp
+        ${JSONCPP_SOURCE_DIR}/src/lib_json/json_value.cpp
+        ${JSONCPP_SOURCE_DIR}/src/lib_json/json_writer.cpp
+)
+
+
+# 添加自身库
+add_library(
+        ${CMAKE_PROJECT_NAME} SHARED
         # List C/C++ source files with relative paths to this CMakeLists.txt.
         native-lib.cpp
         ${SYSCALL_FILE_NAME}   #添加 ARM 32(ARM64) 位汇编源文件
@@ -79,6 +90,7 @@ add_library(
 # can link libraries from various origins, such as libraries defined in this
 # build script, prebuilt third-party libraries, or Android system libraries.
 target_link_libraries(${CMAKE_PROJECT_NAME}
+        jsoncpp
         # List libraries link to the target library
         android
         log)
