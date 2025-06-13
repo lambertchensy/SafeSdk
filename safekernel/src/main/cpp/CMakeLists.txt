@@ -27,7 +27,7 @@ project("safekernel")
 # annotate使用说明: 可传入上面的混淆开关名使此函数强制开启对应混淆功能,参考: https://github.com/DreamSoule/ollvm17?tab=readme-ov-file
 
 set(OLLVM "-mllvm -fla -mllvm -bcf -mllvm -bcf_prob=80 -mllvm -bcf_loop=3 -mllvm -sobf -mllvm -icall -mllvm -ibr -mllvm -igv -mllvm -sub -mllvm -sub_loop=3 -mllvm -split -mllvm -split_num=5")
-add_definitions(${OLLVM})
+#add_definitions(${OLLVM})
 
 # 启用 C 和汇编语言的支持
 enable_language(C ASM)
@@ -84,6 +84,7 @@ add_library(
         sign/CheckSign.cpp
         utils/Base64Utils.cpp
         utils/MD5Utils.cpp
+        utils/ApkUtils.cpp
 )
 
 # Specifies libraries CMake should link to your target library. You
