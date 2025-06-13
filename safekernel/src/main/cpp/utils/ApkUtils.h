@@ -13,7 +13,7 @@
 #include <fcntl.h>
 using namespace std;
 
-jstring getApkPath(JNIEnv* env, jobject context);
+string getApkPath(JNIEnv* env, jobject context);
 string getDeviceBrand();
 string getAndroidVersion();
 

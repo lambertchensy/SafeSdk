@@ -4,9 +4,6 @@
 #include "utils/ApkUtils.h"
 using namespace std;
 
-
-
-
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_qa_test_DeviceHelper_getDeviceInfo(JNIEnv *env, jclass clz, jobject appContext) {
 //    std::string hello = "Hello from C++";
@@ -18,12 +15,9 @@ Java_com_qa_test_DeviceHelper_getDeviceInfo(JNIEnv *env, jclass clz, jobject app
 
     Json::Value json;
     json["info"]="This is jni getDeviceInfo test";
-    jstring pathString = getApkPath(env, appContext) ;
-    if(pathString != nullptr){
-        const char* apkPath = env->GetStringUTFChars(pathString, nullptr);
-        json["apkPath"] = apkPath;
-        env->ReleaseStringUTFChars(pathString, apkPath);
-        env->DeleteLocalRef(pathString);
+    string apkPath = getApkPath(env, appContext) ;
+    if(!apkPath.empty()){
+        json["apkPath"] = apkPath.c_str();
     }
     string deviceBrand = getDeviceBrand() ;
     json["deviceBrand"] = deviceBrand.c_str();

@@ -6,12 +6,13 @@
 #include "../Log.h"
 
 
-jstring getApkPath(JNIEnv* env, jobject context) {
-    jstring apkPath = nullptr;
+string getApkPath(JNIEnv* env, jobject context) {
+    std::string apkPath = ""; // 初始值为空字符串，作为出错时的默认返回值
+
     jclass contextClass = env->GetObjectClass( context);
     if (contextClass == NULL) {
         LOGE( "APK_PATH", "Failed to get context class");
-        return nullptr;
+        return apkPath;
     }
 
     // 获取 getPackageCodePath 方法
@@ -23,7 +24,7 @@ jstring getApkPath(JNIEnv* env, jobject context) {
     if (getPackageCodePathMethod == NULL) {
         LOGE( "APK_PATH => Failed to get method ID");
         env->DeleteLocalRef(contextClass);
-        return nullptr;
+        return apkPath;
     }
 
     // 调用方法获取路径字符串
@@ -31,7 +32,7 @@ jstring getApkPath(JNIEnv* env, jobject context) {
     if (pathString == NULL) {
         LOGE( "APK_PATH => Failed to get package code path");
         env->DeleteLocalRef(contextClass);
-        return nullptr;
+        return apkPath;
     }
 
     // 转换为 C 字符串
@@ -41,14 +42,14 @@ jstring getApkPath(JNIEnv* env, jobject context) {
         LOGE("APK_PATH => Failed to convert jstring to const char*");
         env->DeleteLocalRef(pathString);
         env->DeleteLocalRef(contextClass);
-        return nullptr;
+        return apkPath;
     }
-    apkPath = env->NewStringUTF(apkPathChars);
+    apkPath = apkPathChars;
 
     // Release local references
     env->ReleaseStringUTFChars(pathString, apkPathChars);
-    env->DeleteLocalRef(contextClass);
     env->DeleteLocalRef(pathString);
+    env->DeleteLocalRef(contextClass);
 
     return apkPath;
 }
