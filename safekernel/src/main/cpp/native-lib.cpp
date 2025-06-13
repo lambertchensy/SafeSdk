@@ -36,7 +36,8 @@ Java_com_example_safekernel_SafeHelper_stringFromJNI(JNIEnv *env, jclass clz, jo
 }
 
 
-const char* getApkPath(JNIEnv* env, jobject context) {
+jstring getApkPath(JNIEnv* env, jobject context) {
+    jstring apkPath = nullptr;
     jclass contextClass = env->GetObjectClass( context);
     if (contextClass == NULL) {
         LOGE( "APK_PATH", "Failed to get context class");
@@ -50,7 +51,7 @@ const char* getApkPath(JNIEnv* env, jobject context) {
             "()Ljava/lang/String;");
 
     if (getPackageCodePathMethod == NULL) {
-        LOGE( "APK_PATH", "Failed to get method ID");
+        LOGE( "APK_PATH => Failed to get method ID");
         env->DeleteLocalRef(contextClass);
         return nullptr;
     }
@@ -58,19 +59,28 @@ const char* getApkPath(JNIEnv* env, jobject context) {
     // 调用方法获取路径字符串
     jstring pathString = (jstring)env->CallObjectMethod( context, getPackageCodePathMethod);
     if (pathString == NULL) {
-        LOGE( "APK_PATH", "Failed to get package code path");
+        LOGE( "APK_PATH => Failed to get package code path");
         env->DeleteLocalRef(contextClass);
         return nullptr;
     }
 
     // 转换为 C 字符串
-    const char* path = env->GetStringUTFChars(pathString, NULL);
+    const char* apkPathChars = env->GetStringUTFChars(pathString, NULL);
+    // 检查是否成功获取字符串
+    if (apkPathChars == NULL) {
+        LOGE("APK_PATH => Failed to convert jstring to const char*");
+        env->DeleteLocalRef(pathString);
+        env->DeleteLocalRef(contextClass);
+        return nullptr;
+    }
+    apkPath = env->NewStringUTF(apkPathChars);
 
-    // 清理本地引用
+    // Release local references
+    env->ReleaseStringUTFChars(pathString, apkPathChars);
     env->DeleteLocalRef(contextClass);
     env->DeleteLocalRef(pathString);
 
-    return path;
+    return apkPath;
 }
 
 extern "C" JNIEXPORT jstring JNICALL
@@ -81,12 +91,13 @@ Java_com_example_safekernel_SafeHelper_checkApkSign(JNIEnv *env, jclass clz, job
     int path_match_flag = 0;
 
 
-    const char *path = getApkPath(env,appContext);
-    LOGD("apkPath=%s",path);
-    if(path == nullptr){
+    jstring apkPath = getApkPath(env,appContext);
+    if(apkPath == nullptr){
         LOGE("getApkPath == null");
         return env->NewStringUTF("000"); // 所有标志位都为 0
     }
+    const char* path = env->GetStringUTFChars(apkPath, nullptr);
+    LOGD("apkPath=%s",path);
 
     //打开base.apk文件，获得fd
     int fd = my_openat(AT_FDCWD, reinterpret_cast<const char *>(path), //AT_FDCWD 表示当前工作目录
@@ -94,6 +105,8 @@ Java_com_example_safekernel_SafeHelper_checkApkSign(JNIEnv *env, jclass clz, job
                        0640);
     if(fd < 0){
         LOGE("openat error => %s",path);
+        env->ReleaseStringUTFChars(apkPath, path); // 释放 C 字符串
+        env->DeleteLocalRef(apkPath); // 释放局部引用
         return env->NewStringUTF("000"); // 所有标志位都为 0
     }
 
@@ -151,6 +164,8 @@ Java_com_example_safekernel_SafeHelper_checkApkSign(JNIEnv *env, jclass clz, job
                          std::to_string(permission_flag) +
                          std::to_string(path_match_flag);
     LOGD("checkApkSign result:%s",result.c_str());
+    env->ReleaseStringUTFChars(apkPath, path); // 释放 C 字符串
+    env->DeleteLocalRef(apkPath); // 释放局部引用
     return env->NewStringUTF(result.c_str());   // 将检测结果返回
 }
 
