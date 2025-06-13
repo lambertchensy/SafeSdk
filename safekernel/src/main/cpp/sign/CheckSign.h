@@ -9,6 +9,6 @@
 #include <string>
 using namespace std;
 
-string checkSign(JNIEnv * env, const char* apkPath);
+string checkSign(const char* apkPath);
 
 #endif //OLLVMMODULE_CHECKSIGN_H

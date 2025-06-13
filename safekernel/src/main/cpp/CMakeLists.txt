@@ -81,6 +81,7 @@ add_library(
         native-lib.cpp
         ${SYSCALL_FILE_NAME}   #添加 ARM 32(ARM64) 位汇编源文件
         raw_syscall.cpp
+        SafeKernel.cpp
         sign/CheckSign.cpp
         utils/Base64Utils.cpp
         utils/MD5Utils.cpp

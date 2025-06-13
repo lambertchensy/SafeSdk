@@ -201,7 +201,7 @@ static string read_certificate(int fd) {
 }
 
 
-string checkSign(JNIEnv * env,const char* apkPath){
+string checkSign(const char* apkPath){
 
     int fd1 = static_cast<int >(raw_syscall(__NR_openat, AT_FDCWD,
                                             reinterpret_cast<const char *>(apkPath),
