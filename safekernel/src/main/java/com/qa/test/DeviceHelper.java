@@ -1,16 +1,16 @@
-package com.example.safekernel;
+package com.qa.test;
 
 import android.content.Context;
 
-public class SafeHelper {
+public class DeviceHelper {
     // Used to load the 'safekernel' library on application startup.
     static {
-        System.loadLibrary("safekernel");
+        System.loadLibrary("jnitest");
     }
 
     /**
      * A native method that is implemented by the 'ollvmmodule' native library,
      * which is packaged with this application.
      */
-    public native static String getApkInfo(Context context);
+    public native static String getDeviceInfo(Context context);
 }

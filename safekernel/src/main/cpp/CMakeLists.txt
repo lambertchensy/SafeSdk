@@ -85,14 +85,14 @@ target_link_libraries(jsoncpp  #
 )
 
 
-# 添加自身库
+# 添加自身库jnitest
 add_library(
-        ${CMAKE_PROJECT_NAME} SHARED
+        jnitest SHARED
         # List C/C++ source files with relative paths to this CMakeLists.txt.
-        native-lib.cpp
+        main.cpp
         utils/ApkUtils.cpp  #编译到jsoncpp模块的话也能引用到，只不过需要声明为导出函数，且通过导入表符号引用
 )
-target_link_libraries(${CMAKE_PROJECT_NAME}
+target_link_libraries(jnitest #
         # List libraries link to the target library
         jsoncpp
         android

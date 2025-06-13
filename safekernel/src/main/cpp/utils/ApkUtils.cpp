@@ -1,9 +1,10 @@
 //
 // Created by wengzulan on 2025/6/13.
 //
-
+#include <sys/system_properties.h>  // For system properties
 #include "ApkUtils.h"
 #include "../Log.h"
+
 
 jstring getApkPath(JNIEnv* env, jobject context) {
     jstring apkPath = nullptr;
@@ -50,4 +51,19 @@ jstring getApkPath(JNIEnv* env, jobject context) {
     env->DeleteLocalRef(pathString);
 
     return apkPath;
+}
+
+
+// 获取设备品牌
+string getDeviceBrand() {
+    char brand[PROP_VALUE_MAX] = {0};
+    __system_property_get("ro.product.brand", brand);
+    return string(brand); // 从 char 数组创建 std::string 对象
+}
+
+// 获取 Android 系统版本
+string getAndroidVersion() {
+    char version[PROP_VALUE_MAX] = {0};
+    __system_property_get("ro.build.version.release", version);
+    return string(version); // 从 char 数组创建 std::string 对象
 }

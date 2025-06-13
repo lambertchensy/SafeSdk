@@ -11,8 +11,10 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <fcntl.h>
+using namespace std;
 
 jstring getApkPath(JNIEnv* env, jobject context);
-
+string getDeviceBrand();
+string getAndroidVersion();
 
 #endif //OLLVMMODULE_APKUTILS_H

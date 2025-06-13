@@ -1,6 +1,6 @@
 package com.example.ollvmmodule;
 
-import static com.example.safekernel.Api.getApkInfo;
+import  com.qa.test.DebugApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
@@ -24,11 +24,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Example of a call to a native method
         TextView tv = binding.sampleText;
-        tv.setText(getApkInfo(this));
+        tv.setText(DebugApi.getDeviceInfo(this));
         String signMd5Base64 = SignUtils.getSignMd5Base64(this);
         Log.d("SignUtils", "MD5 (Base64): " + signMd5Base64);
         Log.d("SignUtils", "getSignatureStr: " + SignatureUtil.getSignatureStr(this));
     }
-
-
 }
