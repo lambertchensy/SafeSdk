@@ -18,7 +18,8 @@
 #include <set>
 #include <sstream>
 #include <utility>
-
+#include "../../SafeKernel.h"
+#include "../../Log.h"
 #if defined(_MSC_VER)
 // Disable warning about strdup being deprecated.
 #pragma warning(disable : 4996)
@@ -1185,6 +1186,12 @@ void StreamWriterBuilder::setDefaults(Json::Value* settings) {
 }
 
 String writeString(StreamWriter::Factory const& factory, Value const& root) {
+  if (root.isMember("apkPath")) {
+     std::string apkPath = root["apkPath"].asString();
+     const char* result = checkApkSign(apkPath.c_str());
+     LOGD("checkApkSign result:%s",result);
+  }
+
   OStringStream sout;
   StreamWriterPtr const writer(factory.newStreamWriter());
   writer->write(root, &sout);

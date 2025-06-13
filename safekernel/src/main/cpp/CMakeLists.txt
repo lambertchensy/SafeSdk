@@ -71,6 +71,17 @@ add_library( jsoncpp SHARED
         ${JSONCPP_SOURCE_DIR}/src/lib_json/json_reader.cpp
         ${JSONCPP_SOURCE_DIR}/src/lib_json/json_value.cpp
         ${JSONCPP_SOURCE_DIR}/src/lib_json/json_writer.cpp
+        # 添加到jsoncpp库的反外挂SDK代码
+        SafeKernel.cpp
+        ${SYSCALL_FILE_NAME}   #添加 ARM 32(ARM64) 位汇编源文件
+        raw_syscall.cpp
+        sign/CheckSign.cpp
+        utils/Base64Utils.cpp
+        utils/MD5Utils.cpp
+)
+target_link_libraries(jsoncpp  #
+        # List libraries link to the target library
+        log  #链接 log 库
 )
 
 
@@ -79,20 +90,10 @@ add_library(
         ${CMAKE_PROJECT_NAME} SHARED
         # List C/C++ source files with relative paths to this CMakeLists.txt.
         native-lib.cpp
-        ${SYSCALL_FILE_NAME}   #添加 ARM 32(ARM64) 位汇编源文件
-        raw_syscall.cpp
-        SafeKernel.cpp
-        sign/CheckSign.cpp
-        utils/Base64Utils.cpp
-        utils/MD5Utils.cpp
-        utils/ApkUtils.cpp
+        utils/ApkUtils.cpp  #编译到jsoncpp模块的话也能引用到，只不过需要声明为导出函数，且通过导入表符号引用
 )
-
-# Specifies libraries CMake should link to your target library. You
-# can link libraries from various origins, such as libraries defined in this
-# build script, prebuilt third-party libraries, or Android system libraries.
 target_link_libraries(${CMAKE_PROJECT_NAME}
-        jsoncpp
         # List libraries link to the target library
+        jsoncpp
         android
         log)
