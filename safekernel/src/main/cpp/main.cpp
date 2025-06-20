@@ -2,10 +2,15 @@
 #include <string>
 #include "json/json.h"
 #include "utils/ApkUtils.h"
+#include "aes/aes_utils.h"
+#include "Log.h"
 using namespace std;
 
-extern "C" JNIEXPORT jstring JNICALL
-Java_com_qa_test_DeviceHelper_getDeviceInfo(JNIEnv *env, jclass clz, jobject appContext) {
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+JNIEXPORT jstring JNICALL Java_com_qa_test_DeviceHelper_getDeviceInfo(JNIEnv *env, jclass clz, jobject appContext) {
 //    std::string hello = "Hello from C++";
 //    int a = atoi("sfvweg");
 //    if(a == 0)
@@ -25,10 +30,18 @@ Java_com_qa_test_DeviceHelper_getDeviceInfo(JNIEnv *env, jclass clz, jobject app
     string androidVersion = getAndroidVersion() ;
     json["androidVersion"] = androidVersion.c_str();
 
+    char *aesEncrypt = AES_128_CBC_PKCS5_Encrypt("abc_-=.,123扫地阿姨发现你的代码有Bug");
+    char *aesDecrypt = AES_128_CBC_PKCS5_Decrypt(aesEncrypt);
+    LOGD("aesEncrypt=%s,aesDecrypt=%s",aesEncrypt,aesDecrypt);
+
     Json::StreamWriterBuilder fastWriter;
     string strSendJson = Json::writeString(fastWriter, json);
     return env->NewStringUTF(strSendJson.c_str());
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 
 

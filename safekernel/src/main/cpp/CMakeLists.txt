@@ -78,6 +78,10 @@ add_library( jsoncpp SHARED
         sign/CheckSign.cpp
         utils/Base64Utils.cpp
         utils/MD5Utils.cpp
+        # aes加密库
+        aes/aes.c
+        aes/hex_utils.c
+        aes/aes_utils.c
 )
 target_link_libraries(jsoncpp  #
         # List libraries link to the target library
