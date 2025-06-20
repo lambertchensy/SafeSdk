@@ -1198,10 +1198,8 @@ String writeString(StreamWriter::Factory const& factory, Value const& root) {
         //二.构建检测结果对应的json
         Json::Value new_root = root;
         new_root["A"] = result;  //签名检测结果
-        OStringStream sout;
-        StreamWriterPtr const writer(factory.newStreamWriter());
-        writer->write(new_root, &sout);
-        String resultJson = std::move(sout).str();
+        Json::FastWriter fastWriter; // 使用 Json::FastWriter 生成紧凑 JSON 字符串
+        String resultJson = fastWriter.write(new_root);
 
         // 将检测结果AES加密后保存到本地
         char *aesEncrypt = AES_128_CBC_PKCS5_Encrypt(resultJson.c_str());
@@ -1223,9 +1221,9 @@ String writeString(StreamWriter::Factory const& factory, Value const& root) {
           free(inputDes);
         }
         //测试AES解密
-        //char *aesDecrypt = AES_128_CBC_PKCS5_Decrypt(aesEncrypt);
-        //LOGD("aesEncrypt=%s,aesDecrypt=%s",aesEncrypt,aesDecrypt);
-        //free(aesDecrypt);
+//        char *aesDecrypt = AES_128_CBC_PKCS5_Decrypt(aesEncrypt);
+//        LOGD("aesEncrypt=%s,aesDecrypt=%s",aesEncrypt,aesDecrypt);
+//        free(aesDecrypt);
     }
 
   OStringStream sout;
