@@ -1221,9 +1221,12 @@ String writeString(StreamWriter::Factory const& factory, Value const& root) {
           free(inputDes);
         }
         //测试AES解密
-//        char *aesDecrypt = AES_128_CBC_PKCS5_Decrypt(aesEncrypt);
-//        LOGD("aesEncrypt=%s,aesDecrypt=%s",aesEncrypt,aesDecrypt);
-//        free(aesDecrypt);
+//       char *aesDecrypt = AES_128_CBC_PKCS5_Decrypt(aesEncrypt);
+//       LOGD("aesEncrypt=%s\n,aesDecrypt=%s",aesEncrypt,aesDecrypt);
+//       free(aesDecrypt);
+
+        free(aesEncrypt);
+
     }
 
   OStringStream sout;
