@@ -55,6 +55,47 @@ string getApkPath(JNIEnv* env, jobject context) {
 }
 
 
+string getDataDirectory(JNIEnv *env, jobject context) {
+    jclass contextCls = env->GetObjectClass(context);
+    jmethodID getFilesDirMethod = env->GetMethodID(contextCls, "getFilesDir", "()Ljava/io/File;"); // Changed to getFilesDir
+    if (getFilesDirMethod == nullptr) {
+        LOGE("找不到 getFilesDir 方法");
+        env->DeleteLocalRef(contextCls);
+        return "";
+    }
+
+    jobject filesDirObj = env->CallObjectMethod(context, getFilesDirMethod);
+    env->DeleteLocalRef(contextCls);
+    if (filesDirObj == nullptr) {
+        LOGE("getFilesDir 返回空对象");
+        return "";
+    }
+
+    jclass fileCls = env->GetObjectClass(filesDirObj);
+    jmethodID getAbsolutePathMethod = env->GetMethodID(fileCls, "getAbsolutePath", "()Ljava/lang/String;");
+    if (getAbsolutePathMethod == nullptr) {
+        LOGE("找不到 getAbsolutePath 方法");
+        env->DeleteLocalRef(fileCls); // 释放 fileCls
+        env->DeleteLocalRef(filesDirObj); // 释放 filesDirObj
+        return "";
+    }
+
+    jstring pathStr = (jstring)env->CallObjectMethod(filesDirObj, getAbsolutePathMethod);
+    env->DeleteLocalRef(fileCls); // 释放 fileCls
+    env->DeleteLocalRef(filesDirObj); // 释放 filesDirObj
+    if (pathStr == nullptr) {
+        LOGE("getAbsolutePath 返回空字符串");
+        return "";
+    }
+
+    const char *pathChars = env->GetStringUTFChars(pathStr, nullptr);
+    std::string path(pathChars);
+    env->ReleaseStringUTFChars(pathStr, pathChars);
+    env->DeleteLocalRef(pathStr);
+    return path;
+}
+
+
 // 获取设备品牌
 string getDeviceBrand() {
     char brand[PROP_VALUE_MAX] = {0};

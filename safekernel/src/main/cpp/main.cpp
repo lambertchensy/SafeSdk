@@ -3,12 +3,15 @@
 #include "json/json.h"
 #include "utils/ApkUtils.h"
 #include "aes/aes_utils.h"
+#include "aes/hex_utils.h"
 #include "Log.h"
 using namespace std;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
 
 JNIEXPORT jstring JNICALL Java_com_qa_test_DeviceHelper_getDeviceInfo(JNIEnv *env, jclass clz, jobject appContext) {
 //    std::string hello = "Hello from C++";
@@ -30,9 +33,8 @@ JNIEXPORT jstring JNICALL Java_com_qa_test_DeviceHelper_getDeviceInfo(JNIEnv *en
     string androidVersion = getAndroidVersion() ;
     json["androidVersion"] = androidVersion.c_str();
 
-    char *aesEncrypt = AES_128_CBC_PKCS5_Encrypt("abc_-=.,123扫地阿姨发现你的代码有Bug");
-    char *aesDecrypt = AES_128_CBC_PKCS5_Decrypt(aesEncrypt);
-    LOGD("aesEncrypt=%s,aesDecrypt=%s",aesEncrypt,aesDecrypt);
+    string dataDir = getDataDirectory(env, appContext);
+    json["dataDir"] = dataDir.c_str();
 
     Json::StreamWriterBuilder fastWriter;
     string strSendJson = Json::writeString(fastWriter, json);

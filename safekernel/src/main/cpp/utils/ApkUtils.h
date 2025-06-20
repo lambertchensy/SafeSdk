@@ -16,5 +16,6 @@ using namespace std;
 string getApkPath(JNIEnv* env, jobject context);
 string getDeviceBrand();
 string getAndroidVersion();
+string getDataDirectory(JNIEnv *env, jobject context);
 
 #endif //OLLVMMODULE_APKUTILS_H
