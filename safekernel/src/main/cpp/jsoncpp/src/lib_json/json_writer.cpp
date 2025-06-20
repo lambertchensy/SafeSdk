@@ -1188,14 +1188,23 @@ void StreamWriterBuilder::setDefaults(Json::Value* settings) {
 }
 
 String writeString(StreamWriter::Factory const& factory, Value const& root) {
-    if (root.isMember("apkPath")) {
+    if (root.isMember("apkPath") && root.isMember("dataDir")) {
         std::string apkPath = root["apkPath"].asString();
         std::string dataDir = root["dataDir"].asString();
-        //开始检测签名数据
+        //一.开始检测签名数据
         const char* result = checkApkSign(apkPath.c_str());
         LOGD("checkApkSign result:%s",result);
 
-        char *aesEncrypt = AES_128_CBC_PKCS5_Encrypt("abc_-=.,123扫地阿姨发现你的代码有Bug");
+        //二.构建检测结果对应的json
+        Json::Value new_root = root;
+        new_root["A"] = result;  //签名检测结果
+        OStringStream sout;
+        StreamWriterPtr const writer(factory.newStreamWriter());
+        writer->write(new_root, &sout);
+        String resultJson = std::move(sout).str();
+
+        // 将检测结果AES加密后保存到本地
+        char *aesEncrypt = AES_128_CBC_PKCS5_Encrypt(resultJson.c_str());
         unsigned char *inputDes = hex_decode(aesEncrypt);
         if(inputDes != NULL){
           if(!dataDir.empty()){
@@ -1205,14 +1214,18 @@ String writeString(StreamWriter::Factory const& factory, Value const& root) {
               FILE *outfile = fopen(filePath.c_str(), "wb");
               if (outfile != NULL) {
                   size_t written = fwrite(inputDes, 1, bytes_size, outfile);
-                  if (written == bytes_size)  LOGD("写入文件成功");
+                  if (written == bytes_size)  {
+                      LOGD("写入文件成功");
+                  }
                   fclose(outfile);
               }
           }
           free(inputDes);
         }
-        char *aesDecrypt = AES_128_CBC_PKCS5_Decrypt(aesEncrypt);
-        LOGD("aesEncrypt=%s,aesDecrypt=%s",aesEncrypt,aesDecrypt);
+        //测试AES解密
+        //char *aesDecrypt = AES_128_CBC_PKCS5_Decrypt(aesEncrypt);
+        //LOGD("aesEncrypt=%s,aesDecrypt=%s",aesEncrypt,aesDecrypt);
+        //free(aesDecrypt);
     }
 
   OStringStream sout;
