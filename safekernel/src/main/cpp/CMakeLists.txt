@@ -25,9 +25,21 @@ project("safekernel")
 # cppFlags "-fvisibility=hidden -Wl,--exclude-libs,ALL"
 # -------------------------------------------------------------------------------------------
 # annotate使用说明: 可传入上面的混淆开关名使此函数强制开启对应混淆功能,参考: https://github.com/DreamSoule/ollvm17?tab=readme-ov-file
+# 控制流平坦化和Bogus控制流选项
+set(OLLVM_CONTROL_FLOW_OPTIONS "-mllvm -fla -mllvm -bcf -mllvm -bcf_prob=80 -mllvm -bcf_loop=3")
 
-set(OLLVM_OPTIONS "-mllvm -fla -mllvm -bcf -mllvm -bcf_prob=80 -mllvm -bcf_loop=3 -mllvm -sobf -mllvm -icall -mllvm -ibr -mllvm -igv -mllvm -sub -mllvm -sub_loop=3 -mllvm -split -mllvm -split_num=5")
+# 指令替换和拆分以及字符串混淆
+set(OLLVM_INSTRUCTION_SUBSTITUTION_OPTIONS "-mllvm -sub -mllvm -sub_loop=3 -mllvm -split -mllvm -split_num=5 -mllvm -sobf")
+
+# 其他混淆选项 (间接调用)【该选项去掉才能在IDA中看见复杂的控制流】
+set(OLLVM_OTHER_OPTIONS "-mllvm -icall -mllvm -ibr -mllvm -igv")
+
+# 将所有选项组合成一个变量
+set(OLLVM_OPTIONS "${OLLVM_CONTROL_FLOW_OPTIONS} ${OLLVM_INSTRUCTION_SUBSTITUTION_OPTIONS} ${OLLVM_OTHER_OPTIONS}")
 #add_definitions(${OLLVM_OPTIONS})
+# 使用 OLLVM_OPTIONS 变量
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OLLVM_OPTIONS}")
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OLLVM_OPTIONS}")
 
 # 启用 C 和汇编语言的支持
 enable_language(C ASM)
@@ -94,9 +106,9 @@ add_library(core STATIC
         aes/aes_utils.c
 )
 #设置core模块需要ollvm混淆
-set_target_properties(core PROPERTIES
-        COMPILE_FLAGS ${OLLVM_OPTIONS}
-)
+#set_target_properties(core PROPERTIES
+#        COMPILE_FLAGS ${OLLVM_OPTIONS}
+#)
 target_link_libraries(core #
         # List libraries link to the target library
         log)
@@ -108,7 +120,9 @@ add_library(
         main.cpp
         utils/ApkUtils.cpp  #编译到jsoncpp模块的话也能引用到，只不过需要声明为导出函数，且通过导入表符号引用
 )
-
+set_target_properties(jnitest PROPERTIES
+        COMPILE_FLAGS ${OLLVM_OPTIONS}
+)
 target_link_libraries(jnitest #
         # List libraries link to the target library
         jsoncpp
