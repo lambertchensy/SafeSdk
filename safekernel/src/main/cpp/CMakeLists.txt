@@ -61,6 +61,7 @@ message("-- SYSCALL_FILE_NAME=${SYSCALL_FILE_NAME}")
 # for GameActivity/NativeActivity derived applications, the same library name must be
 # used in the AndroidManifest.xml file.
 
+# ----------------------------------------------------------------------------------------------------------------------
 # 设置 jsoncpp 源码目录
 set(JSONCPP_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp)
 # 包含头文件目录
@@ -76,7 +77,7 @@ target_link_libraries(jsoncpp  #
         # List libraries link to the target library
         core  #链接 kernel 库
 )
-
+# ----------------------------------------------------------------------------------------------------------------------
 #  添加需要ollvm保护的静态库core
 add_library(core STATIC
         # List C/C++ source files with relative paths to this CMakeLists.txt.
@@ -92,12 +93,14 @@ add_library(core STATIC
         aes/hex_utils.c
         aes/aes_utils.c
 )
-#target_compile_options(core PRIVATE ${OLLVM_OPTIONS}) # 将 OLLVM 选项应用于该库
+#设置core模块需要ollvm混淆
+set_target_properties(core PROPERTIES
+        COMPILE_FLAGS ${OLLVM_OPTIONS}
+)
 target_link_libraries(core #
         # List libraries link to the target library
         log)
-
-
+# ----------------------------------------------------------------------------------------------------------------------
 # 添加自身库jnitest
 add_library(
         jnitest SHARED
