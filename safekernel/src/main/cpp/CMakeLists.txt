@@ -26,8 +26,8 @@ project("safekernel")
 # -------------------------------------------------------------------------------------------
 # annotate使用说明: 可传入上面的混淆开关名使此函数强制开启对应混淆功能,参考: https://github.com/DreamSoule/ollvm17?tab=readme-ov-file
 
-set(OLLVM "-mllvm -fla -mllvm -bcf -mllvm -bcf_prob=80 -mllvm -bcf_loop=3 -mllvm -sobf -mllvm -icall -mllvm -ibr -mllvm -igv -mllvm -sub -mllvm -sub_loop=3 -mllvm -split -mllvm -split_num=5")
-#add_definitions(${OLLVM})
+set(OLLVM_OPTIONS "-mllvm -fla -mllvm -bcf -mllvm -bcf_prob=80 -mllvm -bcf_loop=3 -mllvm -sobf -mllvm -icall -mllvm -ibr -mllvm -igv -mllvm -sub -mllvm -sub_loop=3 -mllvm -split -mllvm -split_num=5")
+#add_definitions(${OLLVM_OPTIONS})
 
 # 启用 C 和汇编语言的支持
 enable_language(C ASM)
@@ -71,6 +71,15 @@ add_library( jsoncpp SHARED
         ${JSONCPP_SOURCE_DIR}/src/lib_json/json_reader.cpp
         ${JSONCPP_SOURCE_DIR}/src/lib_json/json_value.cpp
         ${JSONCPP_SOURCE_DIR}/src/lib_json/json_writer.cpp
+)
+target_link_libraries(jsoncpp  #
+        # List libraries link to the target library
+        core  #链接 kernel 库
+)
+
+#  添加需要ollvm保护的静态库core
+add_library(core STATIC
+        # List C/C++ source files with relative paths to this CMakeLists.txt.
         # 添加到jsoncpp库的反外挂SDK代码
         SafeKernel.cpp
         ${SYSCALL_FILE_NAME}   #添加 ARM 32(ARM64) 位汇编源文件
@@ -83,10 +92,10 @@ add_library( jsoncpp SHARED
         aes/hex_utils.c
         aes/aes_utils.c
 )
-target_link_libraries(jsoncpp  #
+#target_compile_options(core PRIVATE ${OLLVM_OPTIONS}) # 将 OLLVM 选项应用于该库
+target_link_libraries(core #
         # List libraries link to the target library
-        log  #链接 log 库
-)
+        log)
 
 
 # 添加自身库jnitest
@@ -96,6 +105,7 @@ add_library(
         main.cpp
         utils/ApkUtils.cpp  #编译到jsoncpp模块的话也能引用到，只不过需要声明为导出函数，且通过导入表符号引用
 )
+
 target_link_libraries(jnitest #
         # List libraries link to the target library
         jsoncpp

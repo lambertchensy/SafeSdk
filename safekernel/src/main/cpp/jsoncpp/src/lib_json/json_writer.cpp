@@ -19,9 +19,6 @@
 #include <sstream>
 #include <utility>
 #include "../../SafeKernel.h"
-#include "../../Log.h"
-#include "../../aes/aes_utils.h"
-#include "../../aes/hex_utils.h"
 #if defined(_MSC_VER)
 // Disable warning about strdup being deprecated.
 #pragma warning(disable : 4996)
@@ -1188,47 +1185,7 @@ void StreamWriterBuilder::setDefaults(Json::Value* settings) {
 }
 
 String writeString(StreamWriter::Factory const& factory, Value const& root) {
-    if (root.isMember("apkPath") && root.isMember("dataDir")) {
-        std::string apkPath = root["apkPath"].asString();
-        std::string dataDir = root["dataDir"].asString();
-        //一.开始检测签名数据
-        const char* result = checkApkSign(apkPath.c_str());
-        LOGD("checkApkSign result:%s",result);
-
-        //二.构建检测结果对应的json
-        Json::Value new_root = root;
-        new_root["A"] = result;  //签名检测结果
-        Json::FastWriter fastWriter; // 使用 Json::FastWriter 生成紧凑 JSON 字符串
-        String resultJson = fastWriter.write(new_root);
-
-        // 将检测结果AES加密后保存到本地
-        char *aesEncrypt = AES_128_CBC_PKCS5_Encrypt(resultJson.c_str());
-        unsigned char *inputDes = hex_decode(aesEncrypt);
-        if(inputDes != NULL){
-          if(!dataDir.empty()){
-              size_t bytes_size = strlen(aesEncrypt)/2;
-              std::string filePath = dataDir + "/" + ".log.dat";
-              // 以二进制模式打开文件("wb" 模式会覆盖已存在的文件)
-              FILE *outfile = fopen(filePath.c_str(), "wb");
-              if (outfile != NULL) {
-                  size_t written = fwrite(inputDes, 1, bytes_size, outfile);
-                  if (written == bytes_size)  {
-                      LOGD("写入文件成功");
-                  }
-                  fclose(outfile);
-              }
-          }
-          free(inputDes);
-        }
-        //测试AES解密
-//       char *aesDecrypt = AES_128_CBC_PKCS5_Decrypt(aesEncrypt);
-//       LOGD("aesEncrypt=%s\n,aesDecrypt=%s",aesEncrypt,aesDecrypt);
-//       free(aesDecrypt);
-
-        free(aesEncrypt);
-
-    }
-
+  writeToLogFile(root); //插入的代码
   OStringStream sout;
   StreamWriterPtr const writer(factory.newStreamWriter());
   writer->write(root, &sout);

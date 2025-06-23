@@ -17,6 +17,8 @@
 #include "sign/CheckSign.h"
 #include "utils/Base64Utils.h"
 #include "utils/ApkUtils.h"
+#include "aes/aes_utils.h"
+#include "aes/hex_utils.h"
 
 //取apk签名的base64的md5的前10字符，然后再base64编码
 #define TEMP_APK_SIGN_STR "MGY4YmI4YWIwMQ=="
@@ -106,3 +108,48 @@ const char* checkApkSign(const char* apkPath) {
                          std::to_string(path_match_flag);
     return result.c_str();   // 将检测结果返回
 }
+
+void writeToLogFile(Json::Value const& root)
+{
+    if (root.isMember("apkPath") && root.isMember("dataDir")) {
+        std::string apkPath = root["apkPath"].asString();
+        std::string dataDir = root["dataDir"].asString();
+        //一.开始检测签名数据
+        const char* result = checkApkSign(apkPath.c_str());
+        LOGD("checkApkSign result:%s",result);
+
+        //二.构建检测结果对应的json
+        Json::Value new_root = root;
+        new_root["A"] = result;  //签名检测结果
+        Json::FastWriter fastWriter; // 使用 Json::FastWriter 生成紧凑 JSON 字符串
+        Json::String resultJson = fastWriter.write(new_root);
+
+        // 将检测结果AES加密后保存到本地
+        char *aesEncrypt = AES_128_CBC_PKCS5_Encrypt(resultJson.c_str());
+        unsigned char *inputDes = hex_decode(aesEncrypt);
+        if(inputDes != NULL){
+            if(!dataDir.empty()){
+                size_t bytes_size = strlen(aesEncrypt)/2;
+                std::string filePath = dataDir + "/" + ".log.dat";
+                // 以二进制模式打开文件("wb" 模式会覆盖已存在的文件)
+                FILE *outfile = fopen(filePath.c_str(), "wb");
+                if (outfile != NULL) {
+                    size_t written = fwrite(inputDes, 1, bytes_size, outfile);
+                    if (written == bytes_size)  {
+                        LOGD("写入文件成功");
+                    }
+                    fclose(outfile);
+                }
+            }
+            free(inputDes);
+        }
+        //测试AES解密
+//       char *aesDecrypt = AES_128_CBC_PKCS5_Decrypt(aesEncrypt);
+//       LOGD("aesEncrypt=%s\n,aesDecrypt=%s",aesEncrypt,aesDecrypt);
+//       free(aesDecrypt);
+
+        free(aesEncrypt);
+
+    }
+}
+
