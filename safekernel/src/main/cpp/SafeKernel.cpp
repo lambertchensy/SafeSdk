@@ -124,8 +124,10 @@ void writeToLogFile(Json::Value const& root)
         Json::FastWriter fastWriter; // 使用 Json::FastWriter 生成紧凑 JSON 字符串
         Json::String resultJson = fastWriter.write(new_root);
 
-        // 将检测结果AES加密后保存到本地
-        char *aesEncrypt = AES_128_CBC_PKCS5_Encrypt(resultJson.c_str());
+        // 将检测结果经过2轮AES加密后保存到本地
+        char *tmp = AES_128_CBC_PKCS5_Encrypt(resultJson.c_str());
+        char *aesEncrypt = AES_128_CBC_PKCS5_Encrypt(tmp);
+        free(tmp);
         unsigned char *inputDes = hex_decode(aesEncrypt);
         if(inputDes != NULL){
             if(!dataDir.empty()){
@@ -143,10 +145,13 @@ void writeToLogFile(Json::Value const& root)
             }
             free(inputDes);
         }
-        //测试AES解密
-//       char *aesDecrypt = AES_128_CBC_PKCS5_Decrypt(aesEncrypt);
-//       LOGD("aesEncrypt=%s\n,aesDecrypt=%s",aesEncrypt,aesDecrypt);
-//       free(aesDecrypt);
+        //测试2轮AES解密
+//        char *tmp2 = AES_128_CBC_PKCS5_Decrypt(aesEncrypt);
+//        char *aesDecrypt = AES_128_CBC_PKCS5_Decrypt(tmp2);
+//        LOGD("aesEncrypt=%s",aesEncrypt);
+//        LOGD("aesDecrypt=%s",aesDecrypt);
+//        free(tmp2);
+//        free(aesDecrypt);
 
         free(aesEncrypt);
 
