@@ -41,6 +41,18 @@ set(OLLVM_OPTIONS "${OLLVM_CONTROL_FLOW_OPTIONS} ${OLLVM_INSTRUCTION_SUBSTITUTIO
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OLLVM_OPTIONS}")
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OLLVM_OPTIONS}")
 
+# 编译出strip 的so库(使用strip可提高二进制文件在逆向工程中的安全性。如果没有二进制文件的信息和对象的名称，分析它将更加困难)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -s")
+message("-- CMAKE_C_FLAGS1=${CMAKE_CXX_FLAGS}")
+
+#正常情况下，so库中的所有方法都是可见的，也就是说，如果你使用IDA工具打开so库，切到Exports页面可以看出。
+#增加下面两行，就能隐藏你自己定义的函数
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -Wl,--exclude-libs,ALL")
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden -Wl,--exclude-libs,ALL")
+#set(CMAKE_CXX_VISIBILITY_PRESET "hidden")
+#set(CMAKE_C_VISIBILITY_PRESET "hidden")
+# -------------------------------------------------------------------------------------------
 # 启用 C 和汇编语言的支持
 enable_language(C ASM)
 # 根据系统处理器架构选择不同的汇编文件
@@ -106,9 +118,9 @@ add_library(core STATIC
         aes/aes_utils.c
 )
 #设置core模块需要ollvm混淆
-#set_target_properties(core PROPERTIES
-#        COMPILE_FLAGS ${OLLVM_OPTIONS}
-#)
+set_target_properties(core PROPERTIES
+        COMPILE_FLAGS ${OLLVM_OPTIONS}
+)
 target_link_libraries(core #
         # List libraries link to the target library
         log)
@@ -120,9 +132,9 @@ add_library(
         main.cpp
         utils/ApkUtils.cpp  #编译到jsoncpp模块的话也能引用到，只不过需要声明为导出函数，且通过导入表符号引用
 )
-set_target_properties(jnitest PROPERTIES
-        COMPILE_FLAGS ${OLLVM_OPTIONS}
-)
+#set_target_properties(jnitest PROPERTIES
+#        COMPILE_FLAGS ${OLLVM_OPTIONS}
+#)
 target_link_libraries(jnitest #
         # List libraries link to the target library
         jsoncpp
