@@ -7,7 +7,7 @@
 
 #define TAG "XNTest"
 
-#define LOG_SWITCH 1
+#define LOG_SWITCH 0
 
 #if LOG_SWITCH
     #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
