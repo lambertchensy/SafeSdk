@@ -47,9 +47,10 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -s")
 message("-- CMAKE_C_FLAGS1=${CMAKE_CXX_FLAGS}")
 
 #正常情况下，so库中的所有方法都是可见的，也就是说，如果你使用IDA工具打开so库，切到Exports页面可以看出。
-#增加下面两行，就能隐藏你自己定义的函数
+#方法一:
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -Wl,--exclude-libs,ALL")
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden -Wl,--exclude-libs,ALL")
+#方法二: 等价于为目标添加了-fvisibility=hidden标志
 #set(CMAKE_CXX_VISIBILITY_PRESET "hidden")
 #set(CMAKE_C_VISIBILITY_PRESET "hidden")
 # -------------------------------------------------------------------------------------------
@@ -120,6 +121,8 @@ add_library(core STATIC
 #设置core模块需要ollvm混淆
 set_target_properties(core PROPERTIES
         COMPILE_FLAGS ${OLLVM_OPTIONS}
+        CXX_VISIBILITY_PRESET "hidden"
+        C_VISIBILITY_PRESET "hidden"
 )
 target_link_libraries(core #
         # List libraries link to the target library
@@ -133,7 +136,7 @@ add_library(
         utils/ApkUtils.cpp  #编译到jsoncpp模块的话也能引用到，只不过需要声明为导出函数，且通过导入表符号引用
 )
 #set_target_properties(jnitest PROPERTIES
-#        COMPILE_FLAGS ${OLLVM_OPTIONS}
+#        #COMPILE_FLAGS ${OLLVM_OPTIONS}
 #)
 target_link_libraries(jnitest #
         # List libraries link to the target library
