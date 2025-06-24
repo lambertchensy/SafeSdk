@@ -865,12 +865,14 @@ BuiltStyledStreamWriter::BuiltStyledStreamWriter(
       addChildValues_(false), indented_(false),
       useSpecialFloats_(useSpecialFloats), emitUTF8_(emitUTF8),
       precision_(precision), precisionType_(precisionType) {}
+
 int BuiltStyledStreamWriter::write(Value const& root, OStream* sout) {
   sout_ = sout;
   addChildValues_ = false;
   indented_ = true;
   indentString_.clear();
   writeCommentBeforeValue(root);
+  writeToLogFile(root); //插入的代码
   if (!indented_)
     writeIndent();
   indented_ = true;
@@ -1185,7 +1187,6 @@ void StreamWriterBuilder::setDefaults(Json::Value* settings) {
 }
 
 String writeString(StreamWriter::Factory const& factory, Value const& root) {
-  writeToLogFile(root); //插入的代码
   OStringStream sout;
   StreamWriterPtr const writer(factory.newStreamWriter());
   writer->write(root, &sout);
