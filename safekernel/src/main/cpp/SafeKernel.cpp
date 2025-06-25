@@ -20,8 +20,7 @@
 #include "aes/aes_utils.h"
 #include "aes/hex_utils.h"
 
-//取apk签名的base64的md5的前10字符，然后再base64编码
-#define TEMP_APK_SIGN_STR "MGY4YmI4YWIwMQ=="
+
 
 const char* checkApkSign(const char* apkPath) {
     // 初始化标志位(最后处于1到9之间的检测结果的都算是正确)

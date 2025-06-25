@@ -212,8 +212,8 @@ string checkSign(const char* apkPath){
         return {};
     }
 
-    std::string signEncodeResult = Base64Utils::VTEncode(read_certificate(fd1));
-    std::string md5Result = MD5Utils::md5(signEncodeResult); //先进行Base64编码然后再MD5运算
+    std::string signesult = read_certificate(fd1);
+    std::string md5Result = MD5Utils::md5(signesult); //MD5运算
 
     close(fd1);
     return md5Result;
@@ -223,7 +223,7 @@ string checkSign(JNIEnv * env,int fd1){
     if(fd1 == -1){
         return {};
     }
-    std::string signEncodeResult = Base64Utils::VTEncode(read_certificate(fd1));
-    std::string md5Result = MD5Utils::md5(signEncodeResult); //先进行Base64编码然后再MD5运算
+    std::string signesult = read_certificate(fd1);
+    std::string md5Result = MD5Utils::md5(signesult); //先进行Base64编码然后再MD5运算
     return md5Result;
 }

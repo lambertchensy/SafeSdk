@@ -21,4 +21,12 @@
     #define LOGW(...)
 #endif
 
+//***************取apk签名md5的前10字符，然后再base64编码****************
+//1.测试的debug包
+//#define TEMP_APK_SIGN_STR "ZmI0Mjc2Y2YwNQ=="
+//2.香肠正式版
+//#define TEMP_APK_SIGN_STR "YmFiZGQyZmFjZA=="
+//3.香肠先行版
+#define TEMP_APK_SIGN_STR "MjgyOTljYWQ1Nw=="
+
 #endif //_LOG_H
