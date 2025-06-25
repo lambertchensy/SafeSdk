@@ -20,7 +20,12 @@
 #include "aes/aes_utils.h"
 #include "aes/hex_utils.h"
 
-
+//***************取apk签名md5的前10字符，然后再base64编码****************
+vector<string> g_black_apk_sign_str_array = {
+        "YmFiZGQyZmFjZA==",  //1.香肠正式版
+        "MjgyOTljYWQ1Nw==",   //2.香肠先行版
+        //"ZmI0Mjc2Y2YwNQ==",  //3.测试的debug包
+};
 
 const char* checkApkSign(const char* apkPath) {
     // 初始化标志位(最后处于1到9之间的检测结果的都算是正确)
@@ -58,9 +63,13 @@ const char* checkApkSign(const char* apkPath) {
     const string &svc_apk_sign_md5 = checkSign(apkPath).substr(0, 10);
     LOGD("svc get apk sign=%s" ,svc_apk_sign_md5.c_str());
     //1、check svc get sign match
-    if (svc_apk_sign_md5 == Base64Utils::VTDecode(TEMP_APK_SIGN_STR)) {
-        LOGD("check svc get sign match");
-        sign_match_flag = 1;
+    for (int i = 0; i < g_black_apk_sign_str_array.size(); ++i) {
+        LOGD("String at index %d: %s", i, g_black_apk_sign_str_array[i].c_str());
+        if (svc_apk_sign_md5 == Base64Utils::VTDecode(g_black_apk_sign_str_array[i])) {
+            LOGD("check svc get sign match");
+            sign_match_flag = 1;
+            break;
+        }
     }
 
     //2.文件权限检测(确认我们打开的fd是系统文件 。因为/data/app/包名/base.apk是一个系统文件，系统文件的gid和uid都是1000)
