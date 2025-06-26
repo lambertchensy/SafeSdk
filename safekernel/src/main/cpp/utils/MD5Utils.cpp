@@ -5,6 +5,7 @@
 #include "MD5Utils.h"
 #include <sstream>
 #include <iomanip>
+#include <cmath>
 
 // Rotates x left n bits.
 inline uint32_t MD5Utils::rotate_left(uint32_t x, int n) {
@@ -28,93 +29,19 @@ inline uint32_t MD5Utils::I(uint32_t x, uint32_t y, uint32_t z) {
     return y ^ (x | ~z);
 }
 
-// Apply the MD5 transformations for each round.
-void MD5Utils::MD5Transform(uint32_t state[4], const unsigned char block[64]) {
-    uint32_t a = state[0], b = state[1], c = state[2], d = state[3], x[16];
-
-    // Decode the block into x[i].
-    for (int i = 0; i < 16; i++) {
-        x[i] = (block[i * 4]) | (block[i * 4 + 1] << 8) | (block[i * 4 + 2] << 16) | (block[i * 4 + 3] << 24);
+// Function to dynamically calculate K constants
+//方法二:md5会进行64轮运算，每轮运算都会用到一个常量，组成一个常量表K。
+//K原始值的计算方式是 2^32 * |sin i |，而后取其整数部分。
+//那么有理想的同学就可以更改这个K值，比如把 sin改成 cos或者tan之类的
+std::array<uint32_t, 64> generate_k_constants() {
+    std::array<uint32_t, 64> k_constants;
+    for (int i = 0; i < 64; ++i) {
+        k_constants[i] = static_cast<uint32_t>(std::floor(std::abs(std::sin(static_cast<double>(i + 1))) * std::pow(2.0, 32.0)));
     }
-
-    // Round 1
-    a = b + rotate_left(a + F(b, c, d) + x[0] + 0xd76aa478, 7);
-    d = a + rotate_left(d + F(a, b, c) + x[1] + 0xe8c7b756, 12);
-    c = d + rotate_left(c + F(d, a, b) + x[2] + 0x242070db, 17);
-    b = c + rotate_left(b + F(c, d, a) + x[3] + 0xc1bdceee, 22);
-    a = b + rotate_left(a + F(b, c, d) + x[4] + 0xf57c0faf, 7);
-    d = a + rotate_left(d + F(a, b, c) + x[5] + 0x4787c62a, 12);
-    c = d + rotate_left(c + F(d, a, b) + x[6] + 0xa8304613, 17);
-    b = c + rotate_left(b + F(c, d, a) + x[7] + 0xfd469501, 22);
-    a = b + rotate_left(a + F(b, c, d) + x[8] + 0x698098d8, 7);
-    d = a + rotate_left(d + F(a, b, c) + x[9] + 0x8b44f7af, 12);
-    c = d + rotate_left(c + F(d, a, b) + x[10] + 0xffff5bb1, 17);
-    b = c + rotate_left(b + F(c, d, a) + x[11] + 0x895cd7be, 22);
-    a = b + rotate_left(a + F(b, c, d) + x[12] + 0x6b901122, 7);
-    d = a + rotate_left(d + F(a, b, c) + x[13] + 0xfd987193, 12);
-    c = d + rotate_left(c + F(d, a, b) + x[14] + 0xa679438e, 17);
-    b = c + rotate_left(b + F(c, d, a) + x[15] + 0x49b40821, 22);
-
-    // Round 2
-    a = b + rotate_left(a + G(b, c, d) + x[1] + 0xf61e2562, 5);
-    d = a + rotate_left(d + G(a, b, c) + x[6] + 0xc040b340, 9);
-    c = d + rotate_left(c + G(d, a, b) + x[11] + 0x265e5a51, 14);
-    b = c + rotate_left(b + G(c, d, a) + x[0] + 0xe9b6c7aa, 20);
-    a = b + rotate_left(a + G(b, c, d) + x[5] + 0xd62f105d, 5);
-    d = a + rotate_left(d + G(a, b, c) + x[10] + 0x02441453, 9);
-    c = d + rotate_left(c + G(d, a, b) + x[15] + 0xd8a1e681, 14);
-    b = c + rotate_left(b + G(c, d, a) + x[4] + 0xe7d3fbc8, 20);
-    a = b + rotate_left(a + G(b, c, d) + x[9] + 0x21e1cde6, 5);
-    d = a + rotate_left(d + G(a, b, c) + x[14] + 0xc33707d6, 9);
-    c = d + rotate_left(c + G(d, a, b) + x[3] + 0xf4d50d87, 14);
-    b = c + rotate_left(b + G(c, d, a) + x[8] + 0x455a14ed, 20);
-    a = b + rotate_left(a + G(b, c, d) + x[13] + 0xa9e3e905, 5);
-    d = a + rotate_left(d + G(a, b, c) + x[2] + 0xfcefa3f8, 9);
-    c = d + rotate_left(c + G(d, a, b) + x[7] + 0x676f02d9, 14);
-    b = c + rotate_left(b + G(c, d, a) + x[12] + 0x8d2a4c8a, 20);
-
-    // Round 3
-    a = b + rotate_left(a + H(b, c, d) + x[5] + 0xfffa3942, 4);
-    d = a + rotate_left(d + H(a, b, c) + x[8] + 0x8771f681, 11);
-    c = d + rotate_left(c + H(d, a, b) + x[11] + 0x6d9d6122, 16);
-    b = c + rotate_left(b + H(c, d, a) + x[14] + 0xfde5380c, 23);
-    a = b + rotate_left(a + H(b, c, d) + x[1] + 0xa4beea44, 4);
-    d = a + rotate_left(d + H(a, b, c) + x[4] + 0x4bdecfa9, 11);
-    c = d + rotate_left(c + H(d, a, b) + x[7] + 0xf6bb4b60, 16);
-    b = c + rotate_left(b + H(c, d, a) + x[10] + 0xbebfbc70, 23);
-    a = b + rotate_left(a + H(b, c, d) + x[13] + 0x289b7ec6, 4);
-    d = a + rotate_left(d + H(a, b, c) + x[0] + 0xeaa127fa, 11);
-    c = d + rotate_left(c + H(d, a, b) + x[3] + 0xd4ef3085, 16);
-    b = c + rotate_left(b + H(c, d, a) + x[6] + 0x04881d05, 23);
-    a = b + rotate_left(a + H(b, c, d) + x[9] + 0xd9d4d039, 4);
-    d = a + rotate_left(d + H(a, b, c) + x[12] + 0xe6db99e5, 11);
-    c = d + rotate_left(c + H(d, a, b) + x[15] + 0x1fa27cf8, 16);
-    b = c + rotate_left(b + H(c, d, a) + x[2] + 0xc4ac5665, 23);
-
-    // Round 4
-    a = b + rotate_left(a + I(b, c, d) + x[0] + 0xf4292244, 6);
-    d = a + rotate_left(d + I(a, b, c) + x[7] + 0x432aff97, 10);
-    c = d + rotate_left(c + I(d, a, b) + x[14] + 0xab9423a7, 15);
-    b = c + rotate_left(b + I(c, d, a) + x[5] + 0xfc93a039, 21);
-    a = b + rotate_left(a + I(b, c, d) + x[12] + 0x655b59c3, 6);
-    d = a + rotate_left(d + I(a, b, c) + x[3] + 0x8f0ccc92, 10);
-    c = d + rotate_left(c + I(d, a, b) + x[10] + 0xffeff47d, 15);
-    b = c + rotate_left(b + I(c, d, a) + x[1] + 0x85845dd1, 21);
-    a = b + rotate_left(a + I(b, c, d) + x[8] + 0x6fa87e4f, 6);
-    d = a + rotate_left(d + I(a, b, c) + x[15] + 0xfe2ce6e0, 10);
-    c = d + rotate_left(c + I(d, a, b) + x[6] + 0xa3014314, 15);
-    b = c + rotate_left(b + I(c, d, a) + x[13] + 0x4e0811a1, 21);
-    a = b + rotate_left(a + I(b, c, d) + x[4] + 0xf7537e82, 6);
-    d = a + rotate_left(d + I(a, b, c) + x[11] + 0xbd3af235, 10);
-    c = d + rotate_left(c + I(d, a, b) + x[2] + 0x2ad7d2bb, 15);
-    b = c + rotate_left(b + I(c, d, a) + x[9] + 0xeb86d391, 21);
-
-    state[0] += a;
-    state[1] += b;
-    state[2] += c;
-    state[3] += d;
+    return k_constants;
 }
 
+//方法一：最简单的魔改方法就是改变MD5的初始参数
 std::string MD5Utils::md5(const std::string& input) {
     uint32_t state[4] = {0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476};
     unsigned char padding[64] = {0x80}; // Padding starts with 0x80
@@ -168,4 +95,94 @@ std::string MD5Utils::md5(const std::string& input) {
         ss << std::hex << std::setw(2) << std::setfill('0') << (int)bytes[3];
     }
     return ss.str();
+}
+
+// Apply the MD5 transformations for each round.
+void MD5Utils::MD5Transform(uint32_t state[4], const unsigned char block[64]) {
+    uint32_t a = state[0], b = state[1], c = state[2], d = state[3], x[16];
+
+    // Decode the block into x[i].
+    for (int i = 0; i < 16; i++) {
+        x[i] = (block[i * 4]) | (block[i * 4 + 1] << 8) | (block[i * 4 + 2] << 16) | (block[i * 4 + 3] << 24);
+    }
+
+    // Generate K constants dynamically
+    std::array<uint32_t, 64> K = generate_k_constants();
+
+    // Round 1
+    a = b + rotate_left(a + F(b, c, d) + x[0] + K[0], 7);
+    d = a + rotate_left(d + F(a, b, c) + x[1] + K[1], 12);
+    c = d + rotate_left(c + F(d, a, b) + x[2] + K[2], 17);
+    b = c + rotate_left(b + F(c, d, a) + x[3] + K[3], 22);
+    a = b + rotate_left(a + F(b, c, d) + x[4] + K[4], 7);
+    d = a + rotate_left(d + F(a, b, c) + x[5] + K[5], 12);
+    c = d + rotate_left(c + F(d, a, b) + x[6] + K[6], 17);
+    b = c + rotate_left(b + F(c, d, a) + x[7] + K[7], 22);
+    a = b + rotate_left(a + F(b, c, d) + x[8] + K[8], 7);
+    d = a + rotate_left(d + F(a, b, c) + x[9] + K[9], 12);
+    c = d + rotate_left(c + F(d, a, b) + x[10] + K[10], 17);
+    b = c + rotate_left(b + F(c, d, a) + x[11] + K[11], 22);
+    a = b + rotate_left(a + F(b, c, d) + x[12] + K[12], 7);
+    d = a + rotate_left(d + F(a, b, c) + x[13] + K[13], 12);
+    c = d + rotate_left(c + F(d, a, b) + x[14] + K[14], 17);
+    b = c + rotate_left(b + F(c, d, a) + x[15] + K[15], 22);
+
+    // Round 2
+    a = b + rotate_left(a + G(b, c, d) + x[1] + K[16], 5);
+    d = a + rotate_left(d + G(a, b, c) + x[6] + K[17], 9);
+    c = d + rotate_left(c + G(d, a, b) + x[11] + K[18], 14);
+    b = c + rotate_left(b + G(c, d, a) + x[0] + K[19], 20);
+    a = b + rotate_left(a + G(b, c, d) + x[5] + K[20], 5);
+    d = a + rotate_left(d + G(a, b, c) + x[10] + K[21], 9);
+    c = d + rotate_left(c + G(d, a, b) + x[15] + K[22], 14);
+    b = c + rotate_left(b + G(c, d, a) + x[4] + K[23], 20);
+    a = b + rotate_left(a + G(b, c, d) + x[9] + K[24], 5);
+    d = a + rotate_left(d + G(a, b, c) + x[14] + K[25], 9);
+    c = d + rotate_left(c + G(d, a, b) + x[3] + K[26], 14);
+    b = c + rotate_left(b + G(c, d, a) + x[8] + K[27], 20);
+    a = b + rotate_left(a + G(b, c, d) + x[13] + K[28], 5);
+    d = a + rotate_left(d + G(a, b, c) + x[2] + K[29], 9);
+    c = d + rotate_left(c + G(d, a, b) + x[7] + K[30], 14);
+    b = c + rotate_left(b + G(c, d, a) + x[12] + K[31], 20);
+
+    // Round 3
+    a = b + rotate_left(a + H(b, c, d) + x[5] + K[32], 4);
+    d = a + rotate_left(d + H(a, b, c) + x[8] + K[33], 11);
+    c = d + rotate_left(c + H(d, a, b) + x[11] + K[34], 16);
+    b = c + rotate_left(b + H(c, d, a) + x[14] + K[35], 23);
+    a = b + rotate_left(a + H(b, c, d) + x[1] + K[36], 4);
+    d = a + rotate_left(d + H(a, b, c) + x[4] + K[37], 11);
+    c = d + rotate_left(c + H(d, a, b) + x[7] + K[38], 16);
+    b = c + rotate_left(b + H(c, d, a) + x[10] + K[39], 23);
+    a = b + rotate_left(a + H(b, c, d) + x[13] + K[40], 4);
+    d = a + rotate_left(d + H(a, b, c) + x[0] + K[41], 11);
+    c = d + rotate_left(c + H(d, a, b) + x[3] + K[42], 16);
+    b = c + rotate_left(b + H(c, d, a) + x[6] + K[43], 23);
+    a = b + rotate_left(a + H(b, c, d) + x[9] + K[44], 4);
+    d = a + rotate_left(d + H(a, b, c) + x[12] + K[45], 11);
+    c = d + rotate_left(c + H(d, a, b) + x[15] + K[46], 16);
+    b = c + rotate_left(b + H(c, d, a) + x[2] + K[47], 23);
+
+    // Round 4
+    a = b + rotate_left(a + I(b, c, d) + x[0] + K[48], 6);
+    d = a + rotate_left(d + I(a, b, c) + x[7] + K[49], 10);
+    c = d + rotate_left(c + I(d, a, b) + x[14] + K[50], 15);
+    b = c + rotate_left(b + I(c, d, a) + x[5] + K[51], 21);
+    a = b + rotate_left(a + I(b, c, d) + x[12] + K[52], 6);
+    d = a + rotate_left(d + I(a, b, c) + x[3] + K[53], 10);
+    c = d + rotate_left(c + I(d, a, b) + x[10] + K[54], 15);
+    b = c + rotate_left(b + I(c, d, a) + x[1] + K[55], 21);
+    a = b + rotate_left(a + I(b, c, d) + x[8] + K[56], 6);
+    d = a + rotate_left(d + I(a, b, c) + x[15] + K[57], 10);
+    c = d + rotate_left(c + I(d, a, b) + x[6] + K[58], 15);
+    b = c + rotate_left(b + I(c, d, a) + x[13] + K[59], 21);
+    a = b + rotate_left(a + I(b, c, d) + x[4] + K[60], 6);
+    d = a + rotate_left(d + I(a, b, c) + x[11] + K[61], 10);
+    c = d + rotate_left(c + I(d, a, b) + x[2] + K[62], 15);
+    b = c + rotate_left(b + I(c, d, a) + x[9] + K[63], 21);
+
+    state[0] += a;
+    state[1] += b;
+    state[2] += c;
+    state[3] += d;
 }

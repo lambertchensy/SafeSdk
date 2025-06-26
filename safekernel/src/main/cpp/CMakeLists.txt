@@ -120,7 +120,7 @@ add_library(core STATIC
 )
 #设置core模块需要ollvm混淆
 set_target_properties(core PROPERTIES
-        COMPILE_FLAGS ${OLLVM_OPTIONS}
+        #COMPILE_FLAGS ${OLLVM_OPTIONS}
         CXX_VISIBILITY_PRESET "hidden"
         C_VISIBILITY_PRESET "hidden"
 )
