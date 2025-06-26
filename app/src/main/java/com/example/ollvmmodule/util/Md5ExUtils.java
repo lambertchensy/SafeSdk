@@ -18,12 +18,6 @@ import java.util.Arrays;
  */
 
 public class Md5ExUtils {
-    // MD5 初始状态常量
-    private static final int A_INIT = 0x67452301;
-    private static final int B_INIT = 0xefcdab89;
-    private static final int C_INIT = 0x98badcfe;
-    private static final int D_INIT = 0x10325476;
-
     // 定义每一轮操作的移位数数组，共 64 个元素
     private static final int[] SHIFT_AMTS = {
             7, 12, 17, 22,   7, 12, 17, 22,   7, 12, 17, 22,   7, 12, 17, 22,
@@ -36,9 +30,14 @@ public class Md5ExUtils {
     private static final int[] T = new int[64];
     static {
         for (int i = 0; i < 64; i++) {
-            T[i] = (int) ((long) (Math.abs(Math.sin(i + 1)) * (1L << 32)));
+            T[i] = (int) ((long) (Math.abs(Math.cos(i + 1)) * (1L << 32)));
         }
     }
+    // MD5 初始状态常量
+    private static final int A_INIT = T[8];
+    private static final int B_INIT = T[5];
+    private static final int C_INIT = T[2];
+    private static final int D_INIT = T[0];
 
     /**
      * 计算给定字符串的 MD5 散列值。
