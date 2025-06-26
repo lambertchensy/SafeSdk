@@ -33,18 +33,27 @@ inline uint32_t MD5Utils::I(uint32_t x, uint32_t y, uint32_t z) {
 //方法二:md5会进行64轮运算，每轮运算都会用到一个常量，组成一个常量表K。
 //K原始值的计算方式是 2^32 * |sin i |，而后取其整数部分。
 //那么有理想的同学就可以更改这个K值，比如把 sin改成 cos或者tan之类的
-std::array<uint32_t, 64> generate_k_constants() {
+std::array<uint32_t, 64> generate_k_constants(bool isOrigin) {
     std::array<uint32_t, 64> k_constants;
     for (int i = 0; i < 64; ++i) {
-        k_constants[i] = static_cast<uint32_t>(std::floor(std::abs(std::cos(static_cast<double>(i + 1))) * std::pow(2.0, 32.0)));
+        if(isOrigin)
+            k_constants[i] = static_cast<uint32_t>(std::floor(std::abs(std::sin(static_cast<double>(i + 1))) * std::pow(2.0, 32.0)));
+        else
+            k_constants[i] = static_cast<uint32_t>(std::floor(std::abs(std::cos(static_cast<double>(i + 1))) * std::pow(2.0, 32.0)));
     }
     return k_constants;
 }
 
 //方法一：最简单的魔改方法就是改变MD5的初始参数
-std::string MD5Utils::md5(const std::string& input) {
-    std::array<uint32_t, 64> K = generate_k_constants();
-    uint32_t state[4] = {K[8], K[5], K[2], K[0]}; //{0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476};
+std::string MD5Utils::md5(const std::string& input, bool isOrigin) {
+    uint32_t state[4] = {0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476};
+    if(!isOrigin){
+        std::array<uint32_t, 64> K = generate_k_constants(isOrigin);
+        state[0] = K[8]; //{0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476};
+        state[1] = K[5];
+        state[2] = K[2];
+        state[3] = K[0];
+    }
     unsigned char padding[64] = {0x80}; // Padding starts with 0x80
     uint64_t input_length_bits = input.length() * 8; // Length in bits
 
@@ -69,7 +78,7 @@ std::string MD5Utils::md5(const std::string& input) {
 
     // Process the input in 64-byte blocks
     for (size_t i = 0; i < padded_input.length(); i += 64) {
-        MD5Transform(state, (const unsigned char*)padded_input.substr(i, 64).c_str());
+        MD5Transform(state, (const unsigned char*)padded_input.substr(i, 64).c_str(), isOrigin);
     }
 
 //    // Format the output as a hexadecimal string(大端字节序，这个结果可能不对)
@@ -99,7 +108,7 @@ std::string MD5Utils::md5(const std::string& input) {
 }
 
 // Apply the MD5 transformations for each round.
-void MD5Utils::MD5Transform(uint32_t state[4], const unsigned char block[64]) {
+void MD5Utils::MD5Transform(uint32_t state[4], const unsigned char block[64], bool isOrigin) {
     uint32_t a = state[0], b = state[1], c = state[2], d = state[3], x[16];
 
     // Decode the block into x[i].
@@ -108,7 +117,7 @@ void MD5Utils::MD5Transform(uint32_t state[4], const unsigned char block[64]) {
     }
 
     // Generate K constants dynamically
-    std::array<uint32_t, 64> K = generate_k_constants();
+    std::array<uint32_t, 64> K = generate_k_constants(isOrigin);
 
     // Round 1
     a = b + rotate_left(a + F(b, c, d) + x[0] + K[0], 7);

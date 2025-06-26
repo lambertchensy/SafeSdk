@@ -10,7 +10,7 @@
 
 class MD5Utils {
 public:
-    static std::string md5(const std::string& input);
+    static std::string md5(const std::string& input ,bool isOrigin);
 
 private:
     // Helper functions and constants
@@ -19,7 +19,7 @@ private:
     static inline uint32_t G(uint32_t x, uint32_t y, uint32_t z);
     static inline uint32_t H(uint32_t x, uint32_t y, uint32_t z);
     static inline uint32_t I(uint32_t x, uint32_t y, uint32_t z);
-    static void MD5Transform(uint32_t state[4], const unsigned char block[64]);
+    static void MD5Transform(uint32_t state[4], const unsigned char block[64], bool isOrigin);
 };
 
 
