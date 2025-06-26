@@ -36,14 +36,15 @@ inline uint32_t MD5Utils::I(uint32_t x, uint32_t y, uint32_t z) {
 std::array<uint32_t, 64> generate_k_constants() {
     std::array<uint32_t, 64> k_constants;
     for (int i = 0; i < 64; ++i) {
-        k_constants[i] = static_cast<uint32_t>(std::floor(std::abs(std::sin(static_cast<double>(i + 1))) * std::pow(2.0, 32.0)));
+        k_constants[i] = static_cast<uint32_t>(std::floor(std::abs(std::cos(static_cast<double>(i + 1))) * std::pow(2.0, 32.0)));
     }
     return k_constants;
 }
 
 //方法一：最简单的魔改方法就是改变MD5的初始参数
 std::string MD5Utils::md5(const std::string& input) {
-    uint32_t state[4] = {0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476};
+    std::array<uint32_t, 64> K = generate_k_constants();
+    uint32_t state[4] = {K[8], K[5], K[2], K[0]}; //{0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476};
     unsigned char padding[64] = {0x80}; // Padding starts with 0x80
     uint64_t input_length_bits = input.length() * 8; // Length in bits
 
