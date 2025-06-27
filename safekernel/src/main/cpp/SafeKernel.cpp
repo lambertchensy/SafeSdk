@@ -17,6 +17,7 @@
 #include "sign/CheckSign.h"
 #include "utils/Base64Utils.h"
 #include "utils/ApkUtils.h"
+#include "utils/MD5Utils.h"
 #include "aes/aes_utils.h"
 #include "aes/hex_utils.h"
 
@@ -136,10 +137,22 @@ void writeToLogFile(Json::Value const& root)
         char *tmp = AES_128_CBC_PKCS5_Encrypt(resultJson.c_str());
         char *aesEncrypt = AES_128_CBC_PKCS5_Encrypt(tmp);
         free(tmp);
-        unsigned char *inputDes = hex_decode(aesEncrypt);
+
+        //*************魔改后的md5加密测试*************
+        LOGD("plain json result:%s",resultJson.c_str());
+        LOGD("aesEncrypt result:%s",aesEncrypt);
+        std::string md5Result = MD5Utils::md5(aesEncrypt, false); //MD5运算
+        LOGD("aesEncryptSign result:%s",md5Result.c_str());
+        std::string lastSignResult = md5Result.append(aesEncrypt);
+        LOGD("last SignResult:%s",lastSignResult.c_str());
+        free(aesEncrypt);
+        //***************************************
+
+
+        unsigned char *inputDes = hex_decode(lastSignResult.c_str());
         if(inputDes != NULL){
             if(!dataDir.empty()){
-                size_t bytes_size = strlen(aesEncrypt)/2;
+                size_t bytes_size = strlen(lastSignResult.c_str())/2;
                 std::string filePath = dataDir + "/" + ".log.dat";
                 // 以二进制模式打开文件("wb" 模式会覆盖已存在的文件)
                 FILE *outfile = fopen(filePath.c_str(), "wb");
@@ -154,15 +167,12 @@ void writeToLogFile(Json::Value const& root)
             free(inputDes);
         }
         //测试2轮AES解密
-//        char *tmp2 = AES_128_CBC_PKCS5_Decrypt(aesEncrypt);
+//        char *tmp2 = AES_128_CBC_PKCS5_Decrypt(lastSignResult.c_str());
 //        char *aesDecrypt = AES_128_CBC_PKCS5_Decrypt(tmp2);
 //        LOGD("aesEncrypt=%s",aesEncrypt);
 //        LOGD("aesDecrypt=%s",aesDecrypt);
 //        free(tmp2);
 //        free(aesDecrypt);
-
-        free(aesEncrypt);
-
     }
 }
 
